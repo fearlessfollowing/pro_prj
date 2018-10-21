@@ -1,0 +1,42 @@
+#init.rc for pro2
+
+on init
+	mkdir /dev/socket
+
+
+on early-boot
+	class_start core
+
+on boot
+	class_start main
+
+
+# wifi/4G service must startup as soon as possible
+service wifi /sbin/wpa_supplicant -Dnl80211 -iwlan0 -B -c /mnt/data/wpa_supplicant.conf
+	class other
+	critical
+
+service camerad /home/nvidia/insta360/bin/camerad
+	class core
+	critical
+	disabled
+
+service logd  /home/nvidia/insta360/bin/logd
+	class core
+	critical
+
+service pro_service /home/nvidia/insta360/bin/pro_service
+	class core
+#	socket camera stream 666
+	critical
+
+service httpd /usr/local/bin/python3.6 /home/nvidia/insta360/bin/ws_src
+	class main
+	critical
+
+
+#on property:sys.tqcoud=true
+#    start ipcam
+
+#on property:sys.ipcam=true
+#	start devd

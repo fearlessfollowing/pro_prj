@@ -1,0 +1,6 @@
+#
+# INSTA360 PRO2 DEFAULT PROPERTIES
+#
+ro.machine=pro2_camera
+ro.version=2.13
+perisist.sys.usb.config=adb

@@ -1,0 +1,28 @@
+Import('com_env')
+import config
+
+
+src  = ['builtins.c']
+src += ['init.c']
+src += ['init_parser.c']
+src += ['parser.c']
+src += ['property_service.c']
+src += ['signal_handler.c']
+src += ['util.c']
+
+src += [config.LIBLOG + '/logd_write.c']
+src += [config.LIBLOG + '/log_event_write.c']
+src += [config.LIBLOG + '/log_time.cpp']
+src += [config.LIBLOG + '/logprint.c']
+src += [config.LIBLOG + '/event_tag_map.c']
+
+src += [config.LIBCUTILS + '/socket_local_server.c']
+src += [config.LIBCUTILS + '/socket_local_client.c']
+src += [config.LIBCUTILS + '/klog.c']
+src += [config.LIBCUTILS + '/uevent.c']
+src += [config.LIBCUTILS + '/system_properties.c']
+
+com_env['CCFLAGS'] += ' -I ./ '
+monitor_obj = com_env.Object(src)
+Return('monitor_obj')
+
