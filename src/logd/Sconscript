@@ -1,0 +1,44 @@
+Import('com_env')
+import config
+
+
+src  = ['LogCommand.cpp']
+src += ['CommandListener.cpp']
+src += ['LogListener.cpp']
+src += ['LogReader.cpp']
+src += ['FlushCommand.cpp']
+src += ['LogBuffer.cpp']
+src += ['LogBufferElement.cpp']
+src += ['LogTimes.cpp']
+src += ['LogStatistics.cpp']
+src += ['LogWhiteBlackList.cpp']
+src += ['main.cpp']
+
+src += [config.LIBLOG + '/log_read.c']
+src += [config.LIBLOG + '/logd_write.c']
+src += [config.LIBLOG + '/log_event_write.c']
+src += [config.LIBLOG + '/log_time.cpp']
+src += [config.LIBLOG + '/logprint.c']
+src += [config.LIBLOG + '/event_tag_map.c']
+
+
+src += [config.LIBCUTILS + '/socket_local_server.c']
+src += [config.LIBCUTILS + '/socket_local_client.c']
+src += [config.LIBCUTILS + '/klog.c']
+src += [config.LIBCUTILS + '/uevent.c']
+src += [config.LIBCUTILS + '/system_properties.c']
+
+src += [config.LIBUTILS + '/Static.cpp']
+src += [config.LIBUTILS + '/String8.cpp']
+src += [config.LIBUTILS + '/String16.cpp']
+src += [config.LIBUTILS + '/Unicode.cpp']
+src += [config.LIBUTILS + '/SharedBuffer.cpp']
+
+src += [config.LIBSYSUTILS + '/SocketListener.cpp']
+src += [config.LIBSYSUTILS + '/FrameworkListener.cpp']
+src += [config.LIBSYSUTILS + '/FrameworkCommand.cpp']
+src += [config.LIBSYSUTILS + '/SocketClient.cpp']
+
+com_env['CCFLAGS'] += ' -I ./ '
+logd_obj = com_env.Object(src)
+Return('logd_obj')

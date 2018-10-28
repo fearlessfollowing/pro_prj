@@ -39,6 +39,7 @@ LIBEV           = EXTLIBS + 'libev-master'
 INC_PATH = []
 INC_PATH += [SDK_ROOT + 'inc']
 INC_PATH += [SDK_ROOT + 'inc/init']
+INC_PATH += [SDK_ROOT + 'extlib/install/include']
 
 # Common flags
 COM_FLAGS = ''
@@ -47,90 +48,6 @@ COM_FLAGS += ' -DHAVE_SYS_UIO_H -DHAVE_PTHREADS -DHAVE_ANDROID_OS '
 
 #COM_FLAGS += $(EXTRA_INC_PATH)
 
-#------------------------------- 调试模式开关 --------------------------------------------------
-COM_FLAGS += ' -DENABLE_DEBUG_MODE '
-
-# 无TF卡也可以拍照开关
-# COM_FLAGS += ' -DENABLE_MODE_NO_TF_TAKEPIC '
-
-# 拍timelapse只存大卡
-COM_FLAGS +=  ' -DENABLE_TIME_LAPSE_STOR_SD '
-
-#------------------------------- 菜单相关的配置（通过开关来控制） START --------------------------------------------------
-
-# 使能AEB菜单项
-COM_FLAGS += ' -DENABLE_MENU_AEB '
-
-# 进入SHOW_SPACE页时给模组上电
-#COM_FLAGS += ' -DENABLE_SPACE_PAGE_POWER_ON_MODULE '
-
-#------------------------------- 菜单相关的配置（通过开关来控制） END   --------------------------------------------------
-
-
-# 使能老化模式开关（仅用于工厂测试）
-COM_FLAGS += ' -DENABLE_AGEING_MODE '
-
-
-# LED 调试信息开关
-#COM_FLAGS += ' -DDEBUG_LED '
-
-# 是否支持HDR（默认不支持）
-#COM_FLAGS += ' -DENABLE_FEATURE_HDR '
-
-
-# 输入事件管理器调试开关
-#COMFLAGS += ' -DDEBUG_INPUT_MANAGER'
-
-#COM_FLAGS += ' -DENABLE_PESUDO_SN '
-
-# 电池调试信息开关
-#COM_FLAGS += ' -DDEBUG_BATTERY '
-
-# 使能同步方式查询TF卡信息
-#COM_FLAGS += ' -DENABLE_SYNC_QUERY_TF_INFO '
-
-# 设置页调试信息开关
-#COM_FLAGS += ' -DDEBUG_SETTING_PAGE '
-
-# diable baterry check, print too much error info
-#COM_FLAGS += ' -DDISABLE_BATTERY_CHECK'
-
-# 使用新的计算剩余空间模式
-COM_FLAGS += ' -DENABLE_USE_NEW_CALC_MODE '
-
-# 使能文件变化监听
-COM_FLAGS += ' -DENABLE_FILE_CHANGE_MONITOR '
-
-# 使能调试hostapd
-COM_FLAGS += ' -DENABLE_DEBUG_HOSTAPD '
-
-# AWB校正
-# COM_FLAGS += ' -DENABLE_AWB_CALC '
-
-
-# 使能Show Storage页左边的导航
-#COM_FLAGS += ' -DENABLE_SHOW_SPACE_NV '
-
-# 打印电池温度
-# COM_FLAGS += ' -DENABLE_SHOW_BATTERY_TMP '
-
-
-# 卷管理器的监听模式
-COM_FLAGS +=  ' -DENABLE_VOLUME_MANAGER_USE_NETLINK '
-
-# 使用system来执行挂载操作
-# COM_FLAGS += ' -DENABLE_USE_SYSTEM_VOL_MOUNTUMOUNT '
-
-# 使能设备文件删除监听线程
-# COM_FLAGS += ' -DENABLE_REMOVE_LISTEN_THREAD '
-
-
-# 进入U盘模式后使能按键事件的接收
-# COMFLAGS += ' -DENBALE_INPUT_EVENT_WHEN_ENTER_UDISK ' 
-
-
-# 调试Netlink消息
-# COM_FLAGS += ' -DENABLE_DEBUG_NETLINK_MSG '
 
 COM_FLAGS += ' -fexceptions -Wall -Wunused-variable '
 

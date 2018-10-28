@@ -40,8 +40,7 @@ class Thread : virtual public RefBase
 {
 public:
 
-    /* 创建一个线程对象,并没有创建或启动对应的线程,见run()方法 */
-	Thread(bool canCallJava = true);		/* 默认的情况下canCallJava = true */
+	Thread(bool canCallJava = true);		
 	
     virtual ~Thread();
 
@@ -96,7 +95,7 @@ private:
 	
     Thread& operator=(const Thread&);
     static  int             _threadLoop(void* user);
-    const   bool            mCanCallJava;			/* 线程是否能运行Java代码的标志 */
+    const   bool            mCanCallJava;			
 
 	// always hold mLock when reading or writing
 	thread_id_t     mThread;
@@ -108,7 +107,7 @@ private:
     // note that all accesses of mExitPending and mRunning need to hold mLock
     volatile bool	mExitPending;
     volatile bool	mRunning;
-	sp<Thread>      mHoldSelf;						/* 指向线程对象 */
+	sp<Thread>      mHoldSelf;						/* 指锟斤拷锟竭程讹拷锟斤拷 */
 			
 #ifdef HAVE_ANDROID_OS
     // legacy for debugging, not used by getTid() as it is set by the child thread

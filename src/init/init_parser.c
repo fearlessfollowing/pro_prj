@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2010 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -30,7 +14,6 @@
 #include "property_service.h"
 #include "util.h"
 
-#include <cutils/iosched_policy.h>
 #include <cutils/list.h>
 
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
@@ -651,49 +634,32 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
         return;
     }
 
-    svc->ioprio_class = IoSchedClass_NONE;
-
     kw = lookup_keyword(args[0]);
     switch (kw) {
     case K_capability:
         break;
-    case K_class:
+
+    case K_class: {
         if (nargs != 2) {
             parse_error(state, "class option requires a classname\n");
         } else {
             svc->classname = args[1];
         }
         break;
-    case K_console:
+    }
+
+    case K_console: {
         svc->flags |= SVC_CONSOLE;
         break;
-    case K_disabled:
+    }
+
+    case K_disabled: {
         svc->flags |= SVC_DISABLED;
         svc->flags |= SVC_RC_DISABLED;
         break;
-    case K_ioprio:
-        if (nargs != 3) {
-            parse_error(state, "ioprio optin usage: ioprio <rt|be|idle> <ioprio 0-7>\n");
-        } else {
-            svc->ioprio_pri = strtoul(args[2], 0, 8);
+    }
 
-            if (svc->ioprio_pri < 0 || svc->ioprio_pri > 7) {
-                parse_error(state, "priority value must be range 0 - 7\n");
-                break;
-            }
-
-            if (!strcmp(args[1], "rt")) {
-                svc->ioprio_class = IoSchedClass_RT;
-            } else if (!strcmp(args[1], "be")) {
-                svc->ioprio_class = IoSchedClass_BE;
-            } else if (!strcmp(args[1], "idle")) {
-                svc->ioprio_class = IoSchedClass_IDLE;
-            } else {
-                parse_error(state, "ioprio option usage: ioprio <rt|be|idle> <0-7>\n");
-            }
-        }
-        break;
-    case K_group:
+    case K_group: {
         if (nargs < 2) {
             parse_error(state, "group option requires a group id\n");
         } else if (nargs > NR_SVC_SUPP_GIDS + 2) {
@@ -708,7 +674,9 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
             svc->nr_supp_gids = n - 2;
         }
         break;
-    case K_keycodes:
+    }
+
+    case K_keycodes: {
         if (nargs < 2) {
             parse_error(state, "keycodes option requires atleast one keycode\n");
         } else {
@@ -723,10 +691,14 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
             }
         }
         break;
-    case K_oneshot:
+    }
+
+    case K_oneshot: {
         svc->flags |= SVC_ONESHOT;
         break;
-    case K_onrestart:
+    }
+
+    case K_onrestart: {
         nargs--;
         args++;
         kw = lookup_keyword(args[0]);
@@ -747,9 +719,12 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
         memcpy(cmd->args, args, sizeof(char*) * nargs);
         list_add_tail(&svc->onrestart.commands, &cmd->clist);
         break;
+    }
+
     case K_critical:
         svc->flags |= SVC_CRITICAL;
         break;
+
     case K_setenv: { /* name value */
         struct svcenvinfo *ei;
         if (nargs < 2) {
@@ -767,7 +742,8 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
         svc->envvars = ei;
         break;
     }
-    case K_socket: {/* name type perm [ uid gid ] */
+
+    case K_socket: {    /* name type perm [ uid gid ] */
         struct socketinfo *si;
         if (nargs < 4) {
             parse_error(state, "socket option requires name, type, perm arguments\n");
@@ -794,21 +770,17 @@ static void parse_line_service(struct parse_state *state, int nargs, char **args
         svc->sockets = si;
         break;
     }
-    case K_user:
+
+    case K_user: {
         if (nargs != 2) {
             parse_error(state, "user option requires a user id\n");
         } else {
             svc->uid = decode_uid(args[1]);
         }
         break;
+    }
+
     case K_seclabel:
-#ifdef HAVE_SELINUX
-        if (nargs != 2) {
-            parse_error(state, "seclabel option requires a label string\n");
-        } else {
-            svc->seclabel = args[1];
-        }
-#endif
         break;
 
     default:

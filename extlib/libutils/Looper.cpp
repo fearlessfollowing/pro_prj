@@ -79,25 +79,22 @@ Looper::Looper(bool allowNonCallbacks): mAllowNonCallbacks(allowNonCallbacks),
 {
     int wakeFds[2];
 
-	/* ���������ܵ� */
+
     int result = pipe(wakeFds);	
     LOG_ALWAYS_FATAL_IF(result != 0, "Could not create wake pipe.  errno=%d", errno);
 
-	/* Looper���󱣴�ܵ����˵��ļ������� */
     mWakeReadPipeFd = wakeFds[0];
     mWakeWritePipeFd = wakeFds[1];
 
-	/* ���öԹܵ��Ķ�Ϊ��������ʽ */
+
     result = fcntl(mWakeReadPipeFd, F_SETFL, O_NONBLOCK);
     LOG_ALWAYS_FATAL_IF(result != 0, "Could not make wake read pipe non-blocking.  errno=%d", errno);
 
-	/* ���öԹܵ���дΪ��������ʽ */
     result = fcntl(mWakeWritePipeFd, F_SETFL, O_NONBLOCK);
     LOG_ALWAYS_FATAL_IF(result != 0, "Could not make wake write pipe non-blocking.  errno=%d", errno);
 
     mIdling = false;
 
-    /* ����epoll���� */
     mEpollFd = epoll_create(EPOLL_SIZE_HINT);
     LOG_ALWAYS_FATAL_IF(mEpollFd < 0, "Could not create epoll instance.  errno=%d", errno);
 
@@ -106,7 +103,6 @@ Looper::Looper(bool allowNonCallbacks): mAllowNonCallbacks(allowNonCallbacks),
     eventItem.events = EPOLLIN;
     eventItem.data.fd = mWakeReadPipeFd;
 
-	/* ���ܵ������ļ����������뵽epoll������, ��ⷢ���ܵ������� */
     result = epoll_ctl(mEpollFd, EPOLL_CTL_ADD, mWakeReadPipeFd, &eventItem);
     LOG_ALWAYS_FATAL_IF(result != 0, "Could not add wake read pipe to epoll instance.  errno=%d", errno);
 }
@@ -123,11 +119,10 @@ Looper::Looper(bool allowNonCallbacks): mAllowNonCallbacks(allowNonCallbacks),
 *****************************************************************************************/
 Looper::~Looper() 
 {
-	/* �رչܵ����˵��ļ������� */
+
     close(mWakeReadPipeFd);
     close(mWakeWritePipeFd);
 	
-	/* �ر�epoll�ļ������� */
     close(mEpollFd);
 }
 
@@ -165,15 +160,6 @@ void Looper::setForThread(const sp<Looper>& looper)
 
 
 
-
-/***************************************************************************************
-** ��������: Looper::getForThread
-** ��������: ��ȡ�������̶߳�Ӧ��Looper����ָ��
-** ��ڲ���: ��
-** �� �� ֵ: �̵߳�Looper����ָ��sp<Looper>
-**
-**
-*****************************************************************************************/
 sp<Looper> Looper::getForThread() 
 {
     int result = pthread_once(&gTLSOnce, initTLSKey);
@@ -184,14 +170,6 @@ sp<Looper> Looper::getForThread()
 
 
 
-/***************************************************************************************
-** ��������: Looper::prepare
-** ��������: ��ȡ�̵߳�Looper����ָ��,����̵߳�Looper���󲻴����򴴽�
-** ��ڲ���: opts - �Ƿ�����ص���־
-** �� �� ֵ: �̵߳�Looper����ָ��sp<Looper>
-**
-**
-*****************************************************************************************/
 sp<Looper> Looper::prepare(int opts) 
 {
     bool allowNonCallbacks = opts & PREPARE_ALLOW_NON_CALLBACKS;
@@ -211,14 +189,6 @@ sp<Looper> Looper::prepare(int opts)
 
 
 
-/***************************************************************************************
-** ��������: Looper::getAllowNonCallbacks
-** ��������: �����Ƿ�����ص���־
-** ��ڲ���: ��
-** �� �� ֵ: �Ƿ�ص��־
-**
-**
-*****************************************************************************************/
 bool Looper::getAllowNonCallbacks() const 
 {
     return mAllowNonCallbacks;
@@ -233,7 +203,7 @@ int Looper::pollOnce(int timeoutMillis, int* outFd, int* outEvents, void** outDa
 
     for (;;) {
 		
-        while (mResponseIndex < mResponses.size()) {	/* �������滹��δ����ȡ������ */
+        while (mResponseIndex < mResponses.size()) {	
             const Response& response = mResponses.itemAt(mResponseIndex++);
             int ident = response.request.ident;
             if (ident >= 0) {
@@ -272,7 +242,7 @@ int Looper::pollOnce(int timeoutMillis, int* outFd, int* outEvents, void** outDa
             return result;
         }
 
-        result = pollInner(timeoutMillis);	/* ����pllInner�ȴ����� */
+        result = pollInner(timeoutMillis);	
     }
 }
 
@@ -284,7 +254,6 @@ int Looper::pollInner(int timeoutMillis)
     ALOGD("%p ~ pollOnce - waiting: timeoutMillis=%d", this, timeoutMillis);
 	#endif
 
-	/* 1.�����������ѯ�ȴ��ĳ�ʱʱ�� */
     // Adjust the timeout based on when the next message is due.
     if (timeoutMillis != 0 && mNextMessageUptime != LLONG_MAX) {
         nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
@@ -305,19 +274,19 @@ int Looper::pollInner(int timeoutMillis)
     mResponses.clear();
     mResponseIndex = 0;
 
-    mIdling = true;		/* ����״̬ΪIdle״̬ */
+    mIdling = true;		
 
-	/* 3.����epoll_wait�ȴ��¼��ĵ������ߵȴ���ʱ */
+
     struct epoll_event eventItems[EPOLL_MAX_EVENTS];
     int eventCount = epoll_wait(mEpollFd, eventItems, EPOLL_MAX_EVENTS, timeoutMillis);
 
-    mIdling = false;	/* �ȴ�����,���ٴ���Idle״̬ */
+    mIdling = false;	
 
     // Acquire lock.
     mLock.lock();
 
-    if (eventCount < 0) {	/* ����epoll_wait���� */
-        if (errno == EINTR) {	/* ���ź��ж� */
+    if (eventCount < 0) {	
+        if (errno == EINTR) {	
             goto Done;
         }
         ALOGW("Poll failed with an unexpected error, errno=%d", errno);
@@ -325,7 +294,6 @@ int Looper::pollInner(int timeoutMillis)
         goto Done;
     }
 
-    /* eventCountΪ0�����ȴ���ʱ */
     if (eventCount == 0) {
 		#if DEBUG_POLL_AND_WAKE
         ALOGD("%p ~ pollOnce - timeout", this);
@@ -339,20 +307,19 @@ int Looper::pollInner(int timeoutMillis)
     ALOGD("%p ~ pollOnce - handling events from %d fds", this, eventCount);
 	#endif
 
-	/* �����ȡ�����¼� */
     for (int i = 0; i < eventCount; i++) {
         int fd = eventItems[i].data.fd;
         uint32_t epollEvents = eventItems[i].events;
 		
-        if (fd == mWakeReadPipeFd) {		/* ��ص��ļ�������Ϊ�ܵ����ļ������� */
-            if (epollEvents & EPOLLIN) {	/* �ܵ������ݿɶ� */		
+        if (fd == mWakeReadPipeFd) {		
+            if (epollEvents & EPOLLIN) {		
                 awoken();
             } else {
                 ALOGW("Ignoring unexpected epoll events 0x%x on wake read pipe.", epollEvents);
             }
-        } else {	/* �����������ļ����������¼����� */
+        } else {	
 
-            ssize_t requestIndex = mRequests.indexOfKey(fd);	/* �����ļ��������ҵ���Ӧ���������� */
+            ssize_t requestIndex = mRequests.indexOfKey(fd);	
             if (requestIndex >= 0) {
                 int events = 0;
                 if (epollEvents & EPOLLIN) 
@@ -363,7 +330,7 @@ int Looper::pollInner(int timeoutMillis)
 					events |= EVENT_ERROR;
                 if (epollEvents & EPOLLHUP) 
 					events |= EVENT_HANGUP;
-                pushResponse(events, mRequests.valueAt(requestIndex));	/* ���������¼�����mResponses�б��� */
+                pushResponse(events, mRequests.valueAt(requestIndex));	
             } else {
                 ALOGW("Ignoring unexpected epoll events 0x%x on fd %d that is "
                         "no longer registered.", epollEvents, fd);
@@ -373,16 +340,14 @@ int Looper::pollInner(int timeoutMillis)
 	
 Done: ;
 
-    /* ���Looper����Ϣ�����Ƿ��д��������Ϣ
-     * �������Ϣ,��������Ϣ��callbacks��������Ϣ
-     */
+
     mNextMessageUptime = LLONG_MAX;
-    while (mMessageEnvelopes.size() != 0) {		/* ��Ϣ�������Ƿ�����Ϣ������ */
+    while (mMessageEnvelopes.size() != 0) {		
 		
-        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);	/* ��ȡ��ǰ��ϵͳʱ�� */
+        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);	
 
         const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(0);
-        if (messageEnvelope.uptime <= now) {	/* ��Ϣ�Ľ�ֹʱ���ѹ�,���������� */
+        if (messageEnvelope.uptime <= now) {	
             { // obtain handler
                 sp<MessageHandler> handler = messageEnvelope.handler;
                 Message message = messageEnvelope.message;
@@ -395,13 +360,13 @@ Done: ;
                         this, handler.get(), message.what);
 				#endif
 
-				handler->handleMessage(message);	/* �������Ϣ */
+				handler->handleMessage(message);	
             } // release handler
 
             mLock.lock();
             mSendingMessage = false;
             result = POLL_CALLBACK;
-        } else {	/* �����Ϣ�����еĵ�һ����Ϣ�Ľ�ֹʱ��δ��,mNextMessageUptime��¼��ʱ�� */
+        } else {	
             mNextMessageUptime = messageEnvelope.uptime;
             break;
         }
@@ -410,12 +375,12 @@ Done: ;
     // Release lock.
     mLock.unlock();
 
-    /* ��������յ����¼�: �����mResponses�б��� */
+    
     for (size_t i = 0; i < mResponses.size(); i++) {
 		
         Response& response = mResponses.editItemAt(i);
 		
-        if (response.request.ident == POLL_CALLBACK) {	/* �����ע���request��Ҫ�ص����� */
+        if (response.request.ident == POLL_CALLBACK) {	
             int fd = response.request.fd;
             int events = response.events;
             void* data = response.request.data;
@@ -470,14 +435,6 @@ int Looper::pollAll(int timeoutMillis, int* outFd, int* outEvents, void** outDat
 
 
 
-/***************************************************************************************
-** ��������: Looper::wake
-** ��������: ��Looper�Ĺܵ���д��д������,�Ա��������ѵ���Looper.pollOnce���߳�
-** ��ڲ���: ��
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
 void Looper::wake() 
 {
 #if DEBUG_POLL_AND_WAKE
@@ -511,15 +468,7 @@ void Looper::awoken()
 }
 
 
-/***************************************************************************************
-** ��������: Looper::pushResponse
-** ��������: �����������Request�ͻ�ȡ�����¼�������һ��Reponse���󲢼���mResponses�б�
-** ��ڲ���: events - ����epoll_wait�õ����¼�
-**			 request - �����¼���Request
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
+
 void Looper::pushResponse(int events, const Request& request) 
 {
     Response response;
@@ -530,16 +479,6 @@ void Looper::pushResponse(int events, const Request& request)
 
 
 
-/***************************************************************************************
-** ��������: Looper::addFd
-** ��������: ��Looper�ļ��������м���һ����������
-** ��ڲ���: fd - ����������ļ�������
-**			 callback - �ص�����
-**			 data - ��������
-** �� �� ֵ: 
-**
-**
-*****************************************************************************************/
 int Looper::addFd(int fd, int ident, int events, Looper_callbackFunc callback, void* data) 
 {
     return addFd(fd, ident, events, callback ? new SimpleLooperCallback(callback) : NULL, data);
@@ -547,16 +486,6 @@ int Looper::addFd(int fd, int ident, int events, Looper_callbackFunc callback, v
 
 
 
-/***************************************************************************************
-** ��������: Looper::addFd
-** ��������: ��Looper�ļ��������м���һ����������
-** ��ڲ���: fd - ����������ļ�������
-**			 callback - LooperCallbackǿָ���������
-**			 data - ��������
-** �� �� ֵ: 
-**
-**
-*****************************************************************************************/
 int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callback, void* data) 
 {
 #if DEBUG_CALLBACKS
@@ -564,7 +493,7 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
             events, callback.get(), data);
 #endif
 
-    if (!callback.get()) {		/* LooperCallback����ΪNULL */
+    if (!callback.get()) {		
         if (! mAllowNonCallbacks) {
             ALOGE("Invalid attempt to set NULL callback but not allowed for this looper.");
             return -1;
@@ -574,7 +503,7 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
             ALOGE("Invalid attempt to set NULL callback with ident < 0.");
             return -1;
         }
-    } else {	/* LooperCallback������� */
+    } else {	
         ident = POLL_CALLBACK;
     }
 
@@ -585,7 +514,6 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
     { 
         AutoMutex _l(mLock);
 
-		/* ����һ��request */
         Request request;
         request.fd = fd;
         request.ident = ident;
@@ -597,21 +525,21 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
         eventItem.events = epollEvents;
         eventItem.data.fd = fd;
 
-        ssize_t requestIndex = mRequests.indexOfKey(fd);	/* ����fd��mRequests�б��в��Ҷ�Ӧ��Request�Ƿ���� */
-        if (requestIndex < 0) {		/* ���������,����fd����epoll�����б��� */
+        ssize_t requestIndex = mRequests.indexOfKey(fd);	
+        if (requestIndex < 0) {		
             int epollResult = epoll_ctl(mEpollFd, EPOLL_CTL_ADD, fd, &eventItem);
             if (epollResult < 0) {
                 ALOGE("Error adding epoll events for fd %d, errno=%d", fd, errno);
                 return -1;
             }
-            mRequests.add(fd, request);	/* ��<fd, Request>����ʽ����mRequests�б��� */
-        } else {	/* �����fd�Ѿ�����epoll�����б���,�޸ĸ�fd��Ӧ��eventItem */
+            mRequests.add(fd, request);	
+        } else {	
             int epollResult = epoll_ctl(mEpollFd, EPOLL_CTL_MOD, fd, &eventItem);
             if (epollResult < 0) {
                 ALOGE("Error modifying epoll events for fd %d, errno=%d", fd, errno);
                 return -1;
             }
-            mRequests.replaceValueAt(requestIndex, request);	/* ͬʱҲ�޸�mRequests�б��ж�Ӧ���� */
+            mRequests.replaceValueAt(requestIndex, request);	
         }
     } 
 	
@@ -620,14 +548,6 @@ int Looper::addFd(int fd, int ident, int events, const sp<LooperCallback>& callb
 
 
 
-/***************************************************************************************
-** ��������: Looper::removeFd
-** ��������: �Ƴ�ָ���ļ��������ļ�������
-** ��ڲ���: fd - ����������ļ�������
-** �� �� ֵ: 
-**
-**
-*****************************************************************************************/
 int Looper::removeFd(int fd)
 {
 #if DEBUG_CALLBACKS
@@ -647,22 +567,13 @@ int Looper::removeFd(int fd)
             return -1;
         }
 
-        mRequests.removeItemsAt(requestIndex);	/* ��mRequests�б����Ƴ���Ӧ��<fd, Request> */
+        mRequests.removeItemsAt(requestIndex);	
     } // release lock
     return 1;
 }
 
 
 
-/***************************************************************************************
-** ��������: Looper::sendMessage
-** ��������: ������Ϣ��Looper����Ϣ������
-** ��ڲ���: handler - ��Ϣ�Ĵ������ָ��
-**			 message - ��Ϣ����
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
 void Looper::sendMessage(const sp<MessageHandler>& handler, const Message& message) 
 {
     nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
@@ -670,17 +581,6 @@ void Looper::sendMessage(const sp<MessageHandler>& handler, const Message& messa
 }
 
 
-
-/***************************************************************************************
-** ��������: Looper::sendMessageDelayed
-** ��������: ������ʱ��Ϣ��Looper����Ϣ������
-** ��ڲ���: uptimeDelay - ��Ϣ����ʱֵ
-**			 handler - ��Ϣ�Ĵ������ָ��
-**			 message - ��Ϣ����
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
 void Looper::sendMessageDelayed(nsecs_t uptimeDelay, const sp<MessageHandler>& handler, const Message& message) 
 {
     nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
@@ -689,16 +589,6 @@ void Looper::sendMessageDelayed(nsecs_t uptimeDelay, const sp<MessageHandler>& h
 
 
 
-/***************************************************************************************
-** ��������: Looper::sendMessageAtTime
-** ��������: ������Ϣ��Looper����Ϣ������
-** ��ڲ���: uptime - ��Ϣ�Ľ���ʱ��
-**			 handler - ��Ϣ�Ĵ������ָ��
-**			 message - ��Ϣ����
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
 void Looper::sendMessageAtTime(nsecs_t uptime, const sp<MessageHandler>& handler, const Message& message) 
 {
 
@@ -711,41 +601,29 @@ void Looper::sendMessageAtTime(nsecs_t uptime, const sp<MessageHandler>& handler
     {
         AutoMutex _l(mLock);
 
-        size_t messageCount = mMessageEnvelopes.size();		/* ��ȡLooper��Ϣ���е�ǰ��Ϣ�ĸ��� */
+        size_t messageCount = mMessageEnvelopes.size();		
 
-		/* �жϴ����͵���Ϣ����Ϣ�����е��ŷ�λ��,����Ϣ�ĵ���ʱ��Ϊ��ֵ */
+
         while (i < messageCount && uptime >= mMessageEnvelopes.itemAt(i).uptime) {
             i += 1;
         }
 
-		/* ����һ����Ϣ�ŷ���� */
         MessageEnvelope messageEnvelope(uptime, handler, message);
 
-		/* ����Ϣ�ŷ������������� */
         mMessageEnvelopes.insertAt(messageEnvelope, i, 1);
 
-        /* ���mSendingMessageΪtrue,�����߳�����������Ϣ���ڻ״̬ */
         if (mSendingMessage) {
             return;
         }
     } 
 
-    /* �����Ϣ����ԭ��Ϊ��,���Ѷ���Ϣ���߳� */
     if (i == 0) {
-        wake();		/* ���ѵ���Looper.pollOnce���߳� */
+        wake();		
     }
 }
 
 
 
-/***************************************************************************************
-** ��������: Looper::removeMessages
-** ��������: ��Looper����Ϣ�������Ƴ�ָ��(ָ������Handler)����Ϣ
-** ��ڲ���: handler - ��Ϣ��Ӧ��Handler����ָ��
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
 void Looper::removeMessages(const sp<MessageHandler>& handler)
 {
 	#if DEBUG_CALLBACKS
@@ -765,15 +643,7 @@ void Looper::removeMessages(const sp<MessageHandler>& handler)
 }
 
 
-/***************************************************************************************
-** ��������: Looper::removeMessages
-** ��������: ��Looper����Ϣ�������Ƴ�ָ��(ָ������Handler������what)����Ϣ
-** ��ڲ���: handler - ��Ϣ��Ӧ��Handler����ָ��
-**			 what - ��Ϣ������ֵ
-** �� �� ֵ: ��
-**
-**
-*****************************************************************************************/
+
 void Looper::removeMessages(const sp<MessageHandler>& handler, int what) 
 {
 
@@ -794,14 +664,6 @@ void Looper::removeMessages(const sp<MessageHandler>& handler, int what)
 }
 
 
-/***************************************************************************************
-** ��������: Looper::isIdling
-** ��������: �ж�Looper�߳��Ƿ�Ϊ����״̬
-** ��ڲ���: ��
-** �� �� ֵ: ����״̬����true;���򷵻�false
-**
-**
-*****************************************************************************************/
 bool Looper::isIdling() const 
 {
     return mIdling;

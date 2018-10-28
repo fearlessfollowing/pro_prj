@@ -44,14 +44,12 @@ namespace android {
  */
 typedef int (*Looper_callbackFunc)(int fd, int events, void* data);
 
-/**
- * ·¢ÍùLooperµÄÏûÏ¢½á¹¹
- */
+
 struct Message {
     Message() : what(0) { }
     Message(int what) : what(what) { }
 
-    /* ÏûÏ¢ÀàĞÍ 
+    /* ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ 
      * The message type. (interpretation is left up to the handler) 
      */
     int what;
@@ -447,24 +445,24 @@ private:
         Message message;
     };
 
-    const bool mAllowNonCallbacks;					/* ÊÇ·ñÔÊĞíÃ»ÓĞCallback */
+    const bool mAllowNonCallbacks;					/* ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Callback */
 
-    int mWakeReadPipeFd;  							/* ±£´æ¹ÜµÀ¶Á¶ËÎÄ¼şÃèÊö·û */
-    int mWakeWritePipeFd; 							/* ±£´æ¹ÜµÀĞ´¶ËÎÄ¼şÃèÊö·û */
+    int mWakeReadPipeFd;  							/* ï¿½ï¿½ï¿½ï¿½Üµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    int mWakeWritePipeFd; 							/* ï¿½ï¿½ï¿½ï¿½Üµï¿½Ğ´ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     Mutex mLock;
 
-    Vector<MessageEnvelope> mMessageEnvelopes; 		/* LooperµÄÏûÏ¢ÈİÆ÷,ÈçÏûÏ¢¶ÓÁĞ */
-    bool mSendingMessage; 							/* ÊÇ·ñÕıÔÚ·¢ËÍÏûÏ¢,ĞèÒªmLock±£»¤ */
+    Vector<MessageEnvelope> mMessageEnvelopes; 		/* Looperï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ */
+    bool mSendingMessage; 							/* ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢,ï¿½ï¿½ÒªmLockï¿½ï¿½ï¿½ï¿½ */
 
-    volatile bool mIdling;							/* ±ê¼ÇLooperÊÇ·ñ´¦¿ÕÏĞ×´Ì¬ */
+    volatile bool mIdling;							/* ï¿½ï¿½ï¿½Looperï¿½Ç·ñ´¦¿ï¿½ï¿½ï¿½×´Ì¬ */
 
-    int mEpollFd; 									/* epoll¶ÔÏóÎÄ¼şÃèÊö·û: µ÷ÓÃepoll_createÊ±·µ»Ø */
+    int mEpollFd; 									/* epollï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½epoll_createÊ±ï¿½ï¿½ï¿½ï¿½ */
 
-    KeyedVector<int, Request> mRequests;  			/* ±£´æËùÓĞĞèÒªepoll¼àÌıµÄÎÄ¼şÃèÊö·û¼°¶ÔÓ¦µÄRequest,ĞèÒªmLock±£»¤ */
+    KeyedVector<int, Request> mRequests;  			/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªepollï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Request,ï¿½ï¿½ÒªmLockï¿½ï¿½ï¿½ï¿½ */
 
-    Vector<Response> mResponses;					/* ±£´æpollOnceµÃµ½µÄÊÂ¼ş, ResponseÈİÆ÷ */
-    size_t mResponseIndex;							/* µ±Ç°ÕıÔÚ´¦ÀíµÄResponseÔÚÈİÆ÷ÖĞµÄË÷Òı */
-    nsecs_t mNextMessageUptime; 					/* ÏÂÒ»¸öÏûÏ¢µÄµ½ÆÚÊ±¿Ì,Èç¹ûÃ»ÓĞÉèÖÃÎªLLONG_MAX */ 
+    Vector<Response> mResponses;					/* ï¿½ï¿½ï¿½ï¿½pollOnceï¿½Ãµï¿½ï¿½ï¿½ï¿½Â¼ï¿½, Responseï¿½ï¿½ï¿½ï¿½ */
+    size_t mResponseIndex;							/* ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½Responseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½ï¿½ï¿½ï¿½ï¿½ */
+    nsecs_t mNextMessageUptime; 					/* ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Äµï¿½ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªLLONG_MAX */ 
 
     int pollInner(int timeoutMillis);
     void awoken();

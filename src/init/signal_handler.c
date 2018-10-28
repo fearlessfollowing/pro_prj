@@ -104,8 +104,8 @@ void signal_init(void)
     act.sa_handler = sigchld_handler;
     act.sa_flags = SA_NOCLDSTOP;
     sigaction(SIGCHLD, &act, 0);	/* 接收子进程退出的信号 */
-    sigaction(SIGINT, &act, 0);		/* 接收中断信号 */
-    sigaction(SIGKILL, &act, 0);	/* 接收强制终止信号 */
+    // sigaction(SIGINT, &act, 0);		/* 接收中断信号 */
+    // sigaction(SIGKILL, &act, 0);	/* 接收强制终止信号 */
 
     /* create a signalling mechanism for the sigchld handler */
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, s) == 0) {

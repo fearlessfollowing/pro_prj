@@ -17,7 +17,7 @@
 #ifndef _INIT_LOG_H_
 #define _INIT_LOG_H_
 
-#if 1
+#if 0
 
 #include <cutils/klog.h>
 

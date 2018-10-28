@@ -1,0 +1,24 @@
+1.安装openssl
+tar zxvf openssl-1.0.2p.tar.gz
+cd openssl-1.0.2p
+配置:
+./config no-asm shared --prefix=/home/roadjun/work/pro_prj/extlib/install/
+修改Makefile，将CC = arm-hisiv400-linux-。并且去掉-m64选项值
+编译，安装:
+make && make install
+
+安装报错:
+installing man1/smime.1
+　　smime.pod around line 272： Expected text after =item， not a number
+　　smime.pod around line 276： Expected text after =item， not a number
+　　smime.pod around line 280： Expected text after =item， not a number
+　　smime.pod around line 285： Expected text after =item， not a number
+　　smime.pod around line 289： Expected text after =item， not a number
+　　POD document had syntax errors at /usr/bin/pod2man line 71.
+　　make： *** ［install_docs］ 错误 255
+　　原因分析：这是由于OpenSSL 1.0.1e 与 perl5.18 不兼容。
+　　解决方法：
+　　1、有人验证 安装perl 5.16 可以兼容，安排低版本perl 5.16可以解决问题。
+　　2、删除 pod2man文件：
+　　sudo rm /usr/bin/pod2man
+

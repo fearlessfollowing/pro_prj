@@ -77,9 +77,7 @@ extern "C" {
  * Android log priority values, in ascending priority order.
  */
 typedef enum android_LogPriority {
-    ANDROID_LOG_UNKNOWN = 0,
-    ANDROID_LOG_DEFAULT,    /* only for SetMinPriority() */
-    ANDROID_LOG_VERBOSE,
+    ANDROID_LOG_VERBOSE = 0,
     ANDROID_LOG_DEBUG,
     ANDROID_LOG_INFO,
     ANDROID_LOG_WARN,

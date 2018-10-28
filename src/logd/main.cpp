@@ -181,9 +181,7 @@ int main()
     {
         char property[PROPERTY_VALUE_MAX];
         property_get("ro.build.type", property, "");
-        if (property_get_bool("logd.statistics",
-                   !!strcmp(property, "user")
-                && !property_get_bool("ro.config.low_ram", false))) {
+        if (property_get_bool("logd.statistics", !!strcmp(property, "user") && !property_get_bool("ro.config.low_ram", false))) {
             logBuf->enableStatistics();
         }
     }

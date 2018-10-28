@@ -1,0 +1,19 @@
+Import('com_env')
+import config
+
+
+src  = ['log_test.cpp']
+
+src += [config.LIBLOG + '/log_read.c']
+src += [config.LIBLOG + '/logd_write.c']
+src += [config.LIBLOG + '/log_event_write.c']
+src += [config.LIBLOG + '/log_time.cpp']
+src += [config.LIBLOG + '/logprint.c']
+src += [config.LIBLOG + '/event_tag_map.c']
+src += [config.LIBLOG + '/LogWrapper.cpp']
+
+src += [config.LIBCUTILS + '/system_properties.c']
+
+com_env['CCFLAGS'] += ' -I ./ '
+log_prop_obj = com_env.Object(src)
+Return('log_prop_obj')

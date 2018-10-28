@@ -116,12 +116,18 @@ static int init_workspace(workspace *w, size_t size)
     if (fd < 0)
         return -1;
 
-    if (ftruncate(fd, size) < 0)
+    if (ftruncate(fd, size) < 0) {
+        ERROR("---> ftruncate %s failed\n", PROPERTY_SPACE_PATH);
         goto out;
+    }
+
 
     data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if(data == MAP_FAILED)
+    if (data == MAP_FAILED) {
+        ERROR("map file %s failed", PROPERTY_SPACE_PATH);
+        ERROR("mmap return reason: %s", strerror(errno));
         goto out;
+    }
 
     close(fd);
 
@@ -490,6 +496,7 @@ static void load_persistent_properties()
         while ((entry = readdir(dir)) != NULL) {
             if (strncmp("persist.", entry->d_name, strlen("persist.")))
                 continue;
+                
 #if HAVE_DIRENT_D_TYPE
             if (entry->d_type != DT_REG)
                 continue;

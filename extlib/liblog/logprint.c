@@ -1,20 +1,3 @@
-/*
-**
-** Copyright 2006-2014, The Android Open Source Project
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
-
 #define _GNU_SOURCE /* for asprintf */
 
 #include <arpa/inet.h>
@@ -84,10 +67,8 @@ static android_LogPriority filterCharToPri (char c)
         pri = ANDROID_LOG_FATAL;
     } else if (c == 's') {
         pri = ANDROID_LOG_SILENT;
-    } else if (c == '*') {
-        pri = ANDROID_LOG_DEFAULT;
     } else {
-        pri = ANDROID_LOG_UNKNOWN;
+        pri = ANDROID_LOG_VERBOSE;
     }
 
     return pri;
@@ -104,8 +85,6 @@ static char filterPriToChar (android_LogPriority pri)
         case ANDROID_LOG_FATAL:         return 'F';
         case ANDROID_LOG_SILENT:        return 'S';
 
-        case ANDROID_LOG_DEFAULT:
-        case ANDROID_LOG_UNKNOWN:
         default:                        return '?';
     }
 }
@@ -120,7 +99,7 @@ static android_LogPriority filterPriForTag(
             ; p_curFilter = p_curFilter->p_next
     ) {
         if (0 == strcmp(tag, p_curFilter->mTag)) {
-            if (p_curFilter->mPri == ANDROID_LOG_DEFAULT) {
+            if (p_curFilter->mPri == ANDROID_LOG_VERBOSE) {
                 return p_format->global_pri;
             } else {
                 return p_curFilter->mPri;
@@ -210,7 +189,7 @@ int android_log_addFilterRule(AndroidLogFormat *p_format,
         const char *filterExpression)
 {
     size_t tagNameLength;
-    android_LogPriority pri = ANDROID_LOG_DEFAULT;
+    android_LogPriority pri = ANDROID_LOG_VERBOSE;
 
     tagNameLength = strcspn(filterExpression, ":");
 
@@ -220,27 +199,18 @@ int android_log_addFilterRule(AndroidLogFormat *p_format,
 
     if(filterExpression[tagNameLength] == ':') {
         pri = filterCharToPri(filterExpression[tagNameLength+1]);
-
-        if (pri == ANDROID_LOG_UNKNOWN) {
-            goto error;
-        }
     }
 
     if(0 == strncmp("*", filterExpression, tagNameLength)) {
         // This filter expression refers to the global filter
         // The default level for this is DEBUG if the priority
         // is unspecified
-        if (pri == ANDROID_LOG_DEFAULT) {
-            pri = ANDROID_LOG_DEBUG;
-        }
 
         p_format->global_pri = pri;
     } else {
         // for filter expressions that don't refer to the global
         // filter, the default is verbose if the priority is unspecified
-        if (pri == ANDROID_LOG_DEFAULT) {
-            pri = ANDROID_LOG_VERBOSE;
-        }
+        pri = ANDROID_LOG_VERBOSE;
 
         char *tagName;
 

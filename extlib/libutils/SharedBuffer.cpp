@@ -21,17 +21,8 @@
 
 #include <log/log.h>
 #include <utils/SharedBuffer.h>
-//#include <utils/Atomic.h>
+#include <atomic>
 
-//if define PLATFORM_X86_64
-//#include <cutils/atomic-x86_64.h>
-//#elif define PLATFORM_X86
-//#include <cutils/atomic-x86.h>
-//#elif define PLATFORM_ARM
-//#include <cutils/atomic-arm.h>
-//#elif define PLATFORM_ARM64
-#include <cutils/atomic-arm64.h>
-//#endif
 
 
 // ---------------------------------------------------------------------------
@@ -40,10 +31,8 @@ namespace android {
 
 SharedBuffer* SharedBuffer::alloc(size_t size)
 {
-    // Don't overflow if the combined size of the buffer / header is larger than
-    // size_max.
-    LOG_ALWAYS_FATAL_IF((size >= (SIZE_MAX - sizeof(SharedBuffer))),
-                        "Invalid buffer size %zu", size);
+
+    LOG_ALWAYS_FATAL_IF((size >= (SIZE_MAX - sizeof(SharedBuffer))), "Invalid buffer size %zu", size);
 
     SharedBuffer* sb = static_cast<SharedBuffer *>(malloc(sizeof(SharedBuffer) + size));
     if (sb) {
@@ -56,12 +45,13 @@ SharedBuffer* SharedBuffer::alloc(size_t size)
 
 ssize_t SharedBuffer::dealloc(const SharedBuffer* released)
 {
-    if (released->mRefs != 0) return -1; // XXX: invalid operation
+    if (released->mRefs != 0) 
+        return -1; // XXX: invalid operation
     free(const_cast<SharedBuffer*>(released));
     return 0;
 }
 
-SharedBuffer* SharedBuffer::edit() const
+SharedBuffer* SharedBuffer::edit()
 {
     if (onlyOwner()) {
         return const_cast<SharedBuffer*>(this);
@@ -74,15 +64,14 @@ SharedBuffer* SharedBuffer::edit() const
     return sb;
 }
 
-SharedBuffer* SharedBuffer::editResize(size_t newSize) const
+SharedBuffer* SharedBuffer::editResize(size_t newSize)
 {
     if (onlyOwner()) {
         SharedBuffer* buf = const_cast<SharedBuffer*>(this);
         if (buf->mSize == newSize) return buf;
         // Don't overflow if the combined size of the new buffer / header is larger than
         // size_max.
-        LOG_ALWAYS_FATAL_IF((newSize >= (SIZE_MAX - sizeof(SharedBuffer))),
-                            "Invalid buffer size %zu", newSize);
+        LOG_ALWAYS_FATAL_IF((newSize >= (SIZE_MAX - sizeof(SharedBuffer))), "Invalid buffer size %zu", newSize);
 
         buf = (SharedBuffer*)realloc(buf, sizeof(SharedBuffer) + newSize);
         if (buf != NULL) {
@@ -107,7 +96,7 @@ SharedBuffer* SharedBuffer::attemptEdit() const
     return 0;
 }
 
-SharedBuffer* SharedBuffer::reset(size_t new_size) const
+SharedBuffer* SharedBuffer::reset(size_t new_size)
 {
     // cheap-o-reset.
     SharedBuffer* sb = alloc(new_size);
@@ -117,14 +106,16 @@ SharedBuffer* SharedBuffer::reset(size_t new_size) const
     return sb;
 }
 
-void SharedBuffer::acquire() const {
-    android_atomic_inc(&mRefs);
+void SharedBuffer::acquire() 
+{
+    // android_atomic_inc(&mRefs);
+    mRefs++;
 }
 
-int32_t SharedBuffer::release(uint32_t flags) const
+int32_t SharedBuffer::release(uint32_t flags)
 {
     int32_t prev = 1;
-    if (onlyOwner() || ((prev = android_atomic_dec(&mRefs)) == 1)) {
+    if (onlyOwner() || (mRefs == 1) ) {
         mRefs = 0;
         if ((flags & eKeepStorage) == 0) {
             free(const_cast<SharedBuffer*>(this));
@@ -132,6 +123,5 @@ int32_t SharedBuffer::release(uint32_t flags) const
     }
     return prev;
 }
-
 
 }; // namespace android

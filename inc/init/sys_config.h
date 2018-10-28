@@ -10,14 +10,14 @@ extern "C" {
 
 
 /* 属性文件的路径 */
-#define PROP_PATH_RAMDISK_DEFAULT  	"/home/nvidia/insta360/etc/default.prop"
-#define PROP_PATH_SYSTEM_BUILD     	"/home/nvidia/insta360/etc/build.prop"
-#define PROP_PATH_SYSTEM_DEFAULT   	"/home/nvidia/insta360/etc/default.prop"
-#define PROP_PATH_LOCAL_OVERRIDE   	"/home/nvidia/insta360/etc/local.prop"
-#define PERSISTENT_PROPERTY_DIR  	"/home/nvidia/insta360/etc/property"	/* 固定属性的存储路径 */
+#define PROP_PATH_RAMDISK_DEFAULT  	"/etc/default.prop"
+#define PROP_PATH_SYSTEM_BUILD     	"/etc/build.prop"
+#define PROP_PATH_SYSTEM_DEFAULT   	"/etc/default.prop"
+#define PROP_PATH_LOCAL_OVERRIDE   	"/etc/local.prop"
+#define PERSISTENT_PROPERTY_DIR  	"/etc/property"	/* 固定属性的存储路径 */
 
 
-#define PROPERTY_SPACE_PATH	"/run/.__properties__"
+#define PROPERTY_SPACE_PATH	"/dev/.__properties__"
 
 
 /* (8 header words + 247 toc words) = 1020 bytes */

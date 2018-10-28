@@ -1,5 +1,5 @@
 /*****************************************************************************************************
-**					Copyrigith(C) 2018	Insta360 Pro2 Camera Project
+**					Copyrigith(C) 2018	Monitor Daemon Project
 ** --------------------------------------------------------------------------------------------------
 ** 文件名称: init.c
 ** 功能描述: monitor守护进程核心文件,主要负载其他核心进程的启动及属性系统的管理
@@ -31,7 +31,6 @@
 
 #include <cutils/list.h>
 #include <cutils/sockets.h>
-#include <cutils/iosched_policy.h>
 #include <cutils/klog.h>
 
 #include <private/android_filesystem_config.h>
@@ -48,7 +47,7 @@
 
 
 #ifndef INIT_RC_PATH
-#define INIT_RC_PATH    "/home/nvidia/insta360/etc/init.rc"
+#define INIT_RC_PATH    "/etc/init.rc"
 #endif
 
 static int property_triggers_enabled = 0;

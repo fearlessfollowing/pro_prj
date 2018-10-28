@@ -22,8 +22,8 @@ com_env = Environment(
 	CPPPATH = config.CPPPATH,
  	)
 
-com_env.Append(CCCOMSTR  ='CC <============================================ $SOURCES')
-com_env.Append(CXXCOMSTR ='CXX <=========================================== $SOURCES')
+#com_env.Append(CCCOMSTR  ='CC <============================================ $SOURCES')
+#com_env.Append(CXXCOMSTR ='CXX <=========================================== $SOURCES')
 #com_env.Append(LINKCOMSTR='Link Target $SOURCES')
 
 
@@ -35,6 +35,23 @@ monitor_obj = SConscript('./src/init/SConscript')
 com_env.Program(target = './out/monitor', source = monitor_obj)
 
 
+############################# adbd ######################################
+#adbd_obj = SConscript('./src/adb/SConscript')
+#com_env.Program(target = './out/adbd', source = adbd_obj)
+
+
+############################# logd ######################################
+#logd_obj = SConscript('./src/logd/Sconscript')
+#com_env.Program(target = './out/logd', source = logd_obj)
+
+############################# logcat ######################################
+logcat_obj = SConscript('./src/logcat/Sconscript')
+com_env.Program(target = './out/logcat', source = logcat_obj)
+
+
+############################# log_prop_test ###############################
+log_prop_obj = SConscript('./src/test/Sconscript')
+com_env.Program(target = './out/log_test', source = log_prop_obj)
 
 	
 
