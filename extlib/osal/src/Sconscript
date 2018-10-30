@@ -14,7 +14,6 @@ src += ['osal_flg.c']
 src += ['osal_file.c']
 src += ['osal_buf.c']
 
-
 com_env['CCFLAGS'] += ' -I ./ '
 osal_obj = com_env.Object(src)
 Return('osal_obj')

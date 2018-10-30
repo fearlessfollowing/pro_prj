@@ -48,10 +48,6 @@ typedef int (*Looper_callbackFunc)(int fd, int events, void* data);
 struct Message {
     Message() : what(0) { }
     Message(int what) : what(what) { }
-
-    /* ��Ϣ���� 
-     * The message type. (interpretation is left up to the handler) 
-     */
     int what;
 };
 
@@ -445,24 +441,24 @@ private:
         Message message;
     };
 
-    const bool mAllowNonCallbacks;					/* �Ƿ�����û��Callback */
+    const bool mAllowNonCallbacks;					
 
-    int mWakeReadPipeFd;  							/* ����ܵ������ļ������� */
-    int mWakeWritePipeFd; 							/* ����ܵ�д���ļ������� */
+    int mWakeReadPipeFd;  							
+    int mWakeWritePipeFd; 							
     Mutex mLock;
 
-    Vector<MessageEnvelope> mMessageEnvelopes; 		/* Looper����Ϣ����,����Ϣ���� */
-    bool mSendingMessage; 							/* �Ƿ����ڷ�����Ϣ,��ҪmLock���� */
+    Vector<MessageEnvelope> mMessageEnvelopes; 		
+    bool mSendingMessage; 							
 
-    volatile bool mIdling;							/* ���Looper�Ƿ񴦿���״̬ */
+    volatile bool mIdling;							
 
-    int mEpollFd; 									/* epoll�����ļ�������: ����epoll_createʱ���� */
+    int mEpollFd; 									
 
-    KeyedVector<int, Request> mRequests;  			/* ����������Ҫepoll�������ļ�����������Ӧ��Request,��ҪmLock���� */
+    KeyedVector<int, Request> mRequests;  			
 
-    Vector<Response> mResponses;					/* ����pollOnce�õ����¼�, Response���� */
-    size_t mResponseIndex;							/* ��ǰ���ڴ����Response�������е����� */
-    nsecs_t mNextMessageUptime; 					/* ��һ����Ϣ�ĵ���ʱ��,���û������ΪLLONG_MAX */ 
+    Vector<Response> mResponses;					
+    size_t mResponseIndex;							
+    nsecs_t mNextMessageUptime; 					
 
     int pollInner(int timeoutMillis);
     void awoken();
@@ -472,6 +468,6 @@ private:
     static void threadDestructor(void *st);
 };
 
-} // namespace android
+} 
 
 #endif // UTILS_LOOPER_H

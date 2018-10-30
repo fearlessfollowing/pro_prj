@@ -17,7 +17,7 @@ extern "C" {
 */
 typedef struct {
     OSAL_MsgqHndl rcvMbx;    ///< Receive mailbox
-	OSAL_MsgqHndl ackMbx;    ///< ACK mailbox
+    OSAL_MsgqHndl ackMbx;    ///< ACK mailbox
 } OSAL_MbxHndl;
 
 

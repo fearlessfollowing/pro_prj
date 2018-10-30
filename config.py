@@ -98,7 +98,6 @@ if HW_PLATFORM == 'gcc':
         CFLAGS += ' -O2'
 
 elif HW_PLATFORM == 'aarch64':
-    # toolchains
     PREFIX = '' 
     CC = PREFIX + 'gcc'
     AS = PREFIX + 'gcc'
@@ -117,7 +116,7 @@ elif HW_PLATFORM == 'aarch64':
     CPATH = ''
     LPATH = ''
 
-elif HW_PLATFORM == 'arm-hisiv400':
+elif HW_PLATFORM == 'x86_64':
     # toolchains
     PREFIX = '/opt/hisi-linux/x86-arm/arm-hisiv400-linux/bin/arm-hisiv400-linux-gnueabi-' 
     CC = PREFIX + 'gcc'
