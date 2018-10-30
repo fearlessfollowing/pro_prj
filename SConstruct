@@ -29,6 +29,11 @@ com_env = Environment(
 
 Export('com_env')
 
+############################# liblooper.a ###################################
+looper_obj = SConscript('./extlib/looper/Sconscript')
+com_env.Library(target = './out/liblooper.a', source = looper_obj)
+
+
 ############################# libosal.a ###################################
 osal_obj = SConscript('./extlib/osal/src/Sconscript')
 com_env.Library(target = './out/libosal.a', source = osal_obj)

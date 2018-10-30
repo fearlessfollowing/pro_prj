@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <sys/time.h>
+
 #include "Looper.h"
 
 
@@ -24,14 +26,17 @@ static pthread_key_t    gTLSKey = 0;
     } 
 
 
-static nsecs_t systemTime(int /*clock*/)
+static nsecs_t systemTime()
 {
-    // Clock support varies widely across hosts. Mac OS doesn't support
-    // posix clocks, older glibcs don't support CLOCK_BOOTTIME and Windows is windows.
     struct timeval t;
     t.tv_sec = t.tv_usec = 0;
     gettimeofday(&t, NULL);
     return nsecs_t(t.tv_sec)*1000000000LL + nsecs_t(t.tv_usec)*1000LL;
+}
+
+static inline nsecs_t milliseconds_to_nanoseconds(nsecs_t secs)
+{
+    return secs*1000000;
 }
 
 
@@ -61,7 +66,6 @@ static int toMillisecondTimeoutDelay(nsecs_t referenceTime, nsecs_t timeoutTime)
 **
 *****************************************************************************************/
 Looper::Looper(bool allowNonCallbacks): mSendingMessage(false),
-									    mResponseIndex(0), 
 									    mNextMessageUptime(LLONG_MAX)
 {
     int wakeFds[2];
@@ -130,6 +134,20 @@ void Looper::initTLSKey()
 }
 
 
+void Looper::setForThread(const std::shared_ptr<Looper>& looper) 
+{
+    pthread_setspecific(gTLSKey, looper.get());
+}
+
+
+std::shared_ptr<Looper> Looper::getForThread() 
+{
+    int result = pthread_once(&gTLSOnce, initTLSKey);
+
+    LOOPER_LOG_ASSERT(result != 0)
+    return (Looper*)pthread_getspecific(gTLSKey);
+}
+
 int Looper::pollOnce(int timeoutMillis, int* outFd, int* outEvents, void** outData) 
 {
     int result = 0;
@@ -161,7 +179,7 @@ int Looper::pollInner(int timeoutMillis)
 	/* 1.计算出本次轮询等待的超时时间 */
     // Adjust the timeout based on when the next message is due.
     if (timeoutMillis != 0 && mNextMessageUptime != LLONG_MAX) {
-        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+        nsecs_t now = systemTime();
         int messageTimeoutMillis = toMillisecondTimeoutDelay(now, mNextMessageUptime);
 		
         if (messageTimeoutMillis >= 0 && (timeoutMillis < 0 || messageTimeoutMillis < timeoutMillis)) {
@@ -225,19 +243,18 @@ Done: ;
 
     while (mMessageEnvelopes.size() != 0) {		/* 消息容器中是否有消息待处理 */
 		
-        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);	/* 获取当前的系统时间 */
+        nsecs_t now = systemTime();	/* 获取当前的系统时间 */
 
-        const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(0);
+        const MessageEnvelope& messageEnvelope = mMessageEnvelopes.at(0);
         if (messageEnvelope.uptime <= now) {	/* 消息的截止时间已过,立即处理它 */
             { // obtain handler
                 std::shared_ptr<MessageHandler> handler = messageEnvelope.handler;
                 Message message = messageEnvelope.message;
-                mMessageEnvelopes.removeAt(0);
+                mMessageEnvelopes.erase(mMessageEnvelopes.begin() + 0);
                 mSendingMessage = true;
                 mLock.unlock();
 
-                fprintf(stdout, "%p ~ pollOnce - sending message: handler=%p, what=%d",
-                        this, handler.get(), message.what);
+                fprintf(stdout, "%p ~ pollOnce - sending message: handler=%p, what=%d\n", this, handler.get(), message.what);
 
 				handler->handleMessage(message);	/* 处理该消息 */
             } // release handler
@@ -267,7 +284,7 @@ int Looper::pollAll(int timeoutMillis, int* outFd, int* outEvents, void** outDat
         } while (result == POLL_CALLBACK);
         return result;
     } else {
-        nsecs_t endTime = systemTime(SYSTEM_TIME_MONOTONIC) + milliseconds_to_nanoseconds(timeoutMillis);
+        nsecs_t endTime = systemTime() + milliseconds_to_nanoseconds(timeoutMillis);
 
         for (;;) {
             int result = pollOnce(timeoutMillis, outFd, outEvents, outData);
@@ -275,7 +292,7 @@ int Looper::pollAll(int timeoutMillis, int* outFd, int* outEvents, void** outDat
                 return result;
             }
 
-            nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+            nsecs_t now = systemTime();
             timeoutMillis = toMillisecondTimeoutDelay(now, endTime);
             if (timeoutMillis == 0) {
                 return POLL_TIMEOUT;
@@ -332,9 +349,9 @@ void Looper::awoken()
 **
 **
 *****************************************************************************************/
-void Looper::sendMessage(const sp<MessageHandler>& handler, const Message& message) 
+void Looper::sendMessage(const std::shared_ptr<MessageHandler>& handler, const Message& message) 
 {
-    nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+    nsecs_t now = systemTime();
     sendMessageAtTime(now, handler, message);
 }
 
@@ -352,7 +369,7 @@ void Looper::sendMessage(const sp<MessageHandler>& handler, const Message& messa
 *****************************************************************************************/
 void Looper::sendMessageDelayed(nsecs_t uptimeDelay, const std::shared_ptr<MessageHandler>& handler, const Message& message) 
 {
-    nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+    nsecs_t now = systemTime();
     sendMessageAtTime(now + uptimeDelay, handler, message);
 }
 
@@ -378,7 +395,7 @@ void Looper::sendMessageAtTime(nsecs_t uptime, const std::shared_ptr<MessageHand
         size_t messageCount = mMessageEnvelopes.size();		/* 获取Looper消息队列当前消息的个数 */
 
 		/* 判断待发送的消息在消息队列中的排放位置,按消息的到期时间为键值 */
-        while (i < messageCount && uptime >= mMessageEnvelopes.itemAt(i).uptime) {
+        while (i < messageCount && uptime >= mMessageEnvelopes.at(i).uptime) {
             i += 1;
         }
 
@@ -386,7 +403,7 @@ void Looper::sendMessageAtTime(nsecs_t uptime, const std::shared_ptr<MessageHand
         MessageEnvelope messageEnvelope(uptime, handler, message);
 
 		/* 将消息信封插入队列容器中 */
-        mMessageEnvelopes.insertAt(messageEnvelope, i, 1);
+        mMessageEnvelopes.insert(mMessageEnvelopes.begin() + i, messageEnvelope);
 
         /* 如果mSendingMessage为true,表明线程正在派送消息处于活动状态 */
         if (mSendingMessage) {
@@ -410,15 +427,15 @@ void Looper::sendMessageAtTime(nsecs_t uptime, const std::shared_ptr<MessageHand
 **
 **
 *****************************************************************************************/
-void Looper::removeMessages(const sp<MessageHandler>& handler)
+void Looper::removeMessages(const std::shared_ptr<MessageHandler>& handler)
 {
     {
         AutoMutex _l(mLock);
 
         for (size_t i = mMessageEnvelopes.size(); i != 0; ) {
-            const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(--i);
+            const MessageEnvelope& messageEnvelope = mMessageEnvelopes.at(--i);
             if (messageEnvelope.handler == handler) {
-                mMessageEnvelopes.removeAt(i);
+                mMessageEnvelopes.erase(mMessageEnvelopes.begin() + i);
             }
         }
     }
@@ -434,15 +451,15 @@ void Looper::removeMessages(const sp<MessageHandler>& handler)
 **
 **
 *****************************************************************************************/
-void Looper::removeMessages(const sp<MessageHandler>& handler, int what) 
+void Looper::removeMessages(const std::shared_ptr<MessageHandler>& handler, int what) 
 {
     {
         AutoMutex _l(mLock);
 
         for (size_t i = mMessageEnvelopes.size(); i != 0; ) {
-            const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(--i);
+            const MessageEnvelope& messageEnvelope = mMessageEnvelopes.at(--i);
             if (messageEnvelope.handler == handler && messageEnvelope.message.what == what) {
-                mMessageEnvelopes.removeAt(i);
+                mMessageEnvelopes.erase(mMessageEnvelopes.begin() + i);
             }
         }
     }

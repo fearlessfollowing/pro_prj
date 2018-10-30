@@ -3,7 +3,10 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 #include <sys/epoll.h>
+
+#include "Mutex.h"
 
 typedef int (*Looper_callbackFunc)(int fd, int events, void* data);
 
@@ -33,7 +36,35 @@ protected:
     virtual ~Looper();
 
 public:
-    
+
+    enum {
+        /**
+         * Result from Looper_pollOnce() and Looper_pollAll():
+         * The poll was awoken using wake() before the timeout expired
+         * and no callbacks were executed and no other file descriptors were ready.
+         */
+        POLL_WAKE = -1,
+
+        /**
+         * Result from Looper_pollOnce() and Looper_pollAll():
+         * One or more callbacks were executed.
+         */
+        POLL_CALLBACK = -2,
+
+        /**
+         * Result from Looper_pollOnce() and Looper_pollAll():
+         * The timeout expired.
+         */
+        POLL_TIMEOUT = -3,
+
+        /**
+         * Result from Looper_pollOnce() and Looper_pollAll():
+         * An error occurred.
+         */
+        POLL_ERROR = -4,
+    };
+
+
     Looper(bool allowNonCallbacks);
 
     int pollOnce(int timeoutMillis, int* outFd, int* outEvents, void** outData);
@@ -90,7 +121,6 @@ private:
 
     std::vector<MessageEnvelope>    mMessageEnvelopes; 		/* Looper的消息容器,如消息队列 */
     
-    size_t                          mResponseIndex;			/* 当前正在处理的Response在容器中的索引 */
     nsecs_t                         mNextMessageUptime; 	/* 下一个消息的到期时刻,如果没有设置为LLONG_MAX */ 
     bool                            mSendingMessage; 		/* 是否正在发送消息,需要mLock保护 */
     volatile bool                   mIdling;                /* 标记Looper是否处空闲状态 */
