@@ -1,0 +1,20 @@
+Import('com_env')
+import config
+
+src  = ['osal.c']
+src += ['osal_tsk.c']
+src += ['osal_thr.c']
+src += ['osal_sem.c']
+src += ['osal_que.c']
+src += ['osal_mutex.c']
+src += ['osal_msgq.c']
+src += ['osal_mbx.c']
+src += ['osal_ipc.c']
+src += ['osal_flg.c']
+src += ['osal_file.c']
+src += ['osal_buf.c']
+
+
+com_env['CCFLAGS'] += ' -I ./ '
+osal_obj = com_env.Object(src)
+Return('osal_obj')

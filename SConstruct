@@ -29,6 +29,12 @@ com_env = Environment(
 
 Export('com_env')
 
+############################# libosal.a ###################################
+osal_obj = SConscript('./extlib/osal/src/Sconscript')
+com_env.Library(target = './out/libosal.a', source = osal_obj)
+
+
+
 ############################# Monitor ######################################
 #monitor_obj = SConscript(config.MONITOR_SConscript)
 monitor_obj = SConscript('./src/init/SConscript')

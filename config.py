@@ -33,6 +33,7 @@ LIBLOG          = EXTLIBS + 'liblog'
 LIBSYSUTILS     = EXTLIBS + 'libsysutils'
 LIBUTILS        = EXTLIBS + 'libutils'
 LIBEV           = EXTLIBS + 'libev-master'
+LIBOSAL         = EXTLIBS + 'osal'
 
 
 # INC_PATH
@@ -40,6 +41,9 @@ INC_PATH = []
 INC_PATH += [SDK_ROOT + 'inc']
 INC_PATH += [SDK_ROOT + 'inc/init']
 INC_PATH += [SDK_ROOT + 'extlib/install/include']
+
+INC_PATH += [SDK_ROOT + 'extlib/osal/inc']
+
 
 # Common flags
 COM_FLAGS = ''
@@ -54,21 +58,9 @@ COM_FLAGS += ' -fexceptions -Wall -Wunused-variable '
 
 
 # toolchains options
-CROSS_TOOL  = 'arm-hisiv400'
+HW_PLATFORM = platform.machine()
 
 #------- toolchains path -------------------------------------------------------
-if os.getenv('CROSS_CC'):
-    CROSS_TOOL = os.getenv('CROSS_CC')
-
-if  CROSS_TOOL == 'gcc':
-    PLATFORM    = 'gcc'
-    EXEC_PATH   = '/usr/local/bin'
-elif CROSS_TOOL == 'aarch64':
-    PLATFORM    = 'aarch64'
-    EXEC_PATH   = ''
-elif CROSS_TOOL == 'arm-hisiv400':
-    PLATFORM    = 'arm-hisiv400'
-    EXEC_PATH   = '/usr/local/bin'
 
 #BUILD = 'debug'
 BUILD = 'release'
@@ -77,7 +69,7 @@ BUILD = 'release'
 TARGET_MONIOTR_NAME = 'monitor'
 
 #------- GCC settings ----------------------------------------------------------
-if PLATFORM == 'gcc':
+if HW_PLATFORM == 'gcc':
     # toolchains
     PREFIX = '' 
     CC = PREFIX + 'gcc'
@@ -105,7 +97,7 @@ if PLATFORM == 'gcc':
     else:
         CFLAGS += ' -O2'
 
-elif PLATFORM == 'aarch64':
+elif HW_PLATFORM == 'aarch64':
     # toolchains
     PREFIX = '' 
     CC = PREFIX + 'gcc'
@@ -125,7 +117,7 @@ elif PLATFORM == 'aarch64':
     CPATH = ''
     LPATH = ''
 
-elif PLATFORM == 'arm-hisiv400':
+elif HW_PLATFORM == 'arm-hisiv400':
     # toolchains
     PREFIX = '/opt/hisi-linux/x86-arm/arm-hisiv400-linux/bin/arm-hisiv400-linux-gnueabi-' 
     CC = PREFIX + 'gcc'
