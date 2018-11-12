@@ -1,0 +1,11 @@
+Import('com_env')
+import config
+
+src  = ['Looper.cpp']
+src += ['Handler.cpp']
+src += ['Handler.cpp']
+
+
+com_env['CCFLAGS'] += ' -I ./ '
+looper_obj = com_env.Object(src)
+Return('looper_obj')
