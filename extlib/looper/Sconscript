@@ -2,8 +2,8 @@ Import('com_env')
 import config
 
 src  = ['Looper.cpp']
-src += ['Handler.cpp']
-src += ['Handler.cpp']
+#src += ['Handler.cpp']
+#src += ['Handler.cpp']
 
 
 com_env['CCFLAGS'] += ' -I ./ '

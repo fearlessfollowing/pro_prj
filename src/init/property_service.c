@@ -104,6 +104,7 @@ typedef struct {
     int fd;
 } workspace;
 
+
 static int init_workspace(workspace *w, size_t size)
 {
     void *data;
