@@ -37,64 +37,64 @@ extern "C" {
 
 /* HTTP message */
 struct http_message {
-  struct mg_str message; /* Whole message: request line + headers + body */
-  struct mg_str body;    /* Message body. 0-length for requests with no body */
+    struct mg_str message; /* Whole message: request line + headers + body */
+    struct mg_str body;    /* Message body. 0-length for requests with no body */
 
-  /* HTTP Request line (or HTTP response line) */
-  struct mg_str method; /* "GET" */
-  struct mg_str uri;    /* "/my_file.html" */
-  struct mg_str proto;  /* "HTTP/1.1" -- for both request and response */
+    /* HTTP Request line (or HTTP response line) */
+    struct mg_str method; /* "GET" */
+    struct mg_str uri;    /* "/my_file.html" */
+    struct mg_str proto;  /* "HTTP/1.1" -- for both request and response */
 
-  /* For responses, code and response status message are set */
-  int resp_code;
-  struct mg_str resp_status_msg;
+    /* For responses, code and response status message are set */
+    int resp_code;
+    struct mg_str resp_status_msg;
 
-  /*
-   * Query-string part of the URI. For example, for HTTP request
-   *    GET /foo/bar?param1=val1&param2=val2
-   *    |    uri    |     query_string     |
-   *
-   * Note that question mark character doesn't belong neither to the uri,
-   * nor to the query_string
-   */
-  struct mg_str query_string;
+    /*
+     * Query-string part of the URI. For example, for HTTP request
+     *    GET /foo/bar?param1=val1&param2=val2
+     *    |    uri    |     query_string     |
+     *
+     * Note that question mark character doesn't belong neither to the uri,
+     * nor to the query_string
+     */
+    struct mg_str query_string;
 
-  /* Headers */
-  struct mg_str header_names[MG_MAX_HTTP_HEADERS];
-  struct mg_str header_values[MG_MAX_HTTP_HEADERS];
+    /* Headers */
+    struct mg_str header_names[MG_MAX_HTTP_HEADERS];
+    struct mg_str header_values[MG_MAX_HTTP_HEADERS];
 };
 
 #if MG_ENABLE_HTTP_WEBSOCKET
 /* WebSocket message */
 struct websocket_message {
-  unsigned char *data;
-  size_t size;
-  unsigned char flags;
+    unsigned char *data;
+    size_t size;
+    unsigned char flags;
 };
 #endif
 
 /* HTTP multipart part */
 struct mg_http_multipart_part {
-  const char *file_name;
-  const char *var_name;
-  struct mg_str data;
-  int status; /* <0 on error */
-  void *user_data;
+    const char *file_name;
+    const char *var_name;
+    struct mg_str data;
+    int status; /* <0 on error */
+    void *user_data;
 };
 
 /* SSI call context */
 struct mg_ssi_call_ctx {
-  struct http_message *req; /* The request being processed. */
-  struct mg_str file;       /* Filesystem path of the file being processed. */
-  struct mg_str arg; /* The argument passed to the tag: <!-- call arg -->. */
+    struct http_message *req; /* The request being processed. */
+    struct mg_str file;       /* Filesystem path of the file being processed. */
+    struct mg_str arg; /* The argument passed to the tag: <!-- call arg -->. */
 };
 
 /* HTTP and websocket events. void *ev_data is described in a comment. */
-#define MG_EV_HTTP_REQUEST 100 /* struct http_message * */
-#define MG_EV_HTTP_REPLY 101   /* struct http_message * */
-#define MG_EV_HTTP_CHUNK 102   /* struct http_message * */
-#define MG_EV_SSI_CALL 105     /* char * */
-#define MG_EV_SSI_CALL_CTX 106 /* struct mg_ssi_call_ctx * */
+#define MG_EV_HTTP_REQUEST  100 /* struct http_message * */
+#define MG_EV_HTTP_REPLY    101   /* struct http_message * */
+#define MG_EV_HTTP_CHUNK    102   /* struct http_message * */
+#define MG_EV_SSI_CALL      105     /* char * */
+#define MG_EV_SSI_CALL_CTX  106 /* struct mg_ssi_call_ctx * */
 
 #if MG_ENABLE_HTTP_WEBSOCKET
 #define MG_EV_WEBSOCKET_HANDSHAKE_REQUEST 111 /* struct http_message * */
@@ -323,8 +323,7 @@ void mg_printf_websocket_frame(struct mg_connection *nc, int op_and_flags,
  *Otherwise,
  * a length of the decoded string is returned, not counting final NUL.
  */
-int mg_url_decode(const char *src, int src_len, char *dst, int dst_len,
-                  int is_form_url_encoded);
+int mg_url_decode(const char *src, int src_len, char *dst, int dst_len, int is_form_url_encoded);
 
 extern void mg_hash_md5_v(size_t num_msgs, const uint8_t *msgs[],
                           const size_t *msg_lens, uint8_t *digest);
